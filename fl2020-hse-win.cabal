@@ -1,0 +1,66 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 31d239ada7b5e6d61fb2fc86858b7154b107249609d4243de75a17d1a827126c
+
+name:           fl2020-hse-win
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://https://github.com/kajigor/fl-2020-hse-win>
+homepage:       https://github.com/kajigor/fl-2020-hse-win#readme
+bug-reports:    https://github.com/kajigor/fl-2020-hse-win/issues
+author:         Ekaterina Verbitskaia
+maintainer:     kajigor@gmail.com
+copyright:      2020 Ekaterina Verbitskaia
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/kajigor/fl-2020-hse-win
+
+library
+  exposed-modules:
+      Regexp
+  other-modules:
+      Paths_fl2020_hse_win
+  hs-source-dirs:
+      src
+  build-depends:
+      HUnit
+    , base >=4.7 && <5
+    , containers
+    , hedgehog
+    , pretty-show
+    , tasty
+    , tasty-discover
+    , tasty-hedgehog
+    , tasty-hunit
+  default-language: Haskell2010
+
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: Test.hs
+  other-modules:
+      Test.Regexp
+      Paths_fl2020_hse_win
+  hs-source-dirs:
+      test
+  build-depends:
+      HUnit
+    , base >=4.7 && <5
+    , containers
+    , fl2020-hse-win
+    , hedgehog
+    , pretty-show
+    , tasty
+    , tasty-discover
+    , tasty-hedgehog
+    , tasty-hunit
+  default-language: Haskell2010

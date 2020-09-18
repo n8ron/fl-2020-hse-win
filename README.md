@@ -1,2 +1,5 @@
-# fl_2020_hse_win
-Репозиторий для курса формальных языков
+# Parsing with Derivatives: регулярные языки
+
+`stack build` --- сборка.
+
+`stack test` --- запуск тестов.
