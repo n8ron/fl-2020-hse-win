@@ -11,7 +11,9 @@ tokens = [
   'NUM', 
   'PLUS', 
   'MULT',
-  'ID'
+  'ID',
+  'LBR',
+  'RBR'
 ] + list(reserved.values())
 
 def t_ID(t):
@@ -26,6 +28,8 @@ def t_NUM(t):
 
 t_PLUS = r'\+'
 t_MULT = r'\*'
+t_LBR = r'\('
+t_RBR = r'\)'
 
 t_ignore = ' \t'
 
@@ -39,12 +43,12 @@ def t_error(t):
 
 lexer = lex.lex() 
 
-lexer.input(sys.argv[1]) 
+#lexer.input(sys.argv[1]) 
 
-while True: 
-  r'\+' 
-  13
-  tok = lexer.token() 
-  if not tok: 
-    break
-  print(tok)
+#while True: 
+#  r'\+' 
+#  13
+#  tok = lexer.token() 
+#  if not tok: 
+#    break
+#  print(tok)

@@ -23,3 +23,6 @@ cabal.project.local~
 .ghc.environment.*
 *.lpo
 *.lp
+__pycache__
+*.out
+parsetab.py
