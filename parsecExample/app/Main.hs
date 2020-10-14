@@ -22,15 +22,6 @@ parseFromFile path = do
 main :: IO ()
 main = do
   putStrLn ""
-
-  runParser "13"
-  runParser "42"
-  runParser "007"
-  runParser "a"
-  runParser "(a+13)*42"
-  runParser "a+13*42"
-  runParser "1^2^3^4"
-  runParser "a+2^3*4"
-
-  writeFile "input.txt" "a+2^3*4"
-  parseFromFile "input.txt"
+  parseFromFile "Test.mod"
+  runParser "d :- d.  d (a b) :- d.  d (a B) :- (d, c A); f." 
+         --    a (b c)  .  f :- e. a :- (((((d)))))."
