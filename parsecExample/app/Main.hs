@@ -22,6 +22,5 @@ parseFromFile path = do
 main :: IO ()
 main = do
   putStrLn ""
-  parseFromFile "Test.mod"
   runParser "d :- d.  d (a b) :- d.  d (a B) :- (d, c A); f." 
          --    a (b c)  .  f :- e. a :- (((((d)))))."
