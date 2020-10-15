@@ -3,11 +3,11 @@ module Parser where
 import Text.ParserCombinators.Parsec
 import Control.Monad
 
-newtype Prog = Prog [Prolog]
-
-data Prolog = Module Id Char
-            | Types [TypeDef]
-            | Def [Relation] 
+data PrologProgram = Program {
+        pModule :: Maybe Id
+      , types   :: [TypeDef]
+      , rels    :: [Relation]
+      }
 
 
 data Relation = Ratom Atom
@@ -49,14 +49,6 @@ newtype Id = Id String
 newtype Var = Var String
 
 -------------------SHOW-------------------------
-instance Show Prog where
-  show s = myShowProg s
-
-
-myShowProg (Prog [])     = ""
-myShowProg (Prog [x])    = show x
-myShowProg (Prog (x:xs)) = show x ++ show (Prog xs)
-
 instance Show TypeDef where
   show s = myShowTypeDef s
 
@@ -71,16 +63,17 @@ myShowType (TBr c a b) =  " (" ++ show a ++ ") "
 myShowType (Arrow a b) = show a ++ " -> " ++ show b
 
 
-instance Show Prolog where
+instance Show PrologProgram where
     show s = myShowProlog s
 
-myShowProlog (Def []) = ""
-myShowProlog (Def [x]) = show x
-myShowProlog (Def (x:xs)) = show x ++ show (Def xs)
-myShowProlog (Types []) = ""
-myShowProlog (Types [x]) = show x
-myShowProlog (Types (x:xs)) = show x ++ show (Types xs)
-myShowProlog (Module name dot)= "Module " ++ show name ++ "\n"
+myShowProlog (Program pModule types rels) = 
+  (case pModule of Just name -> "Module " ++ show name
+                   Nothing   -> "") ++ "\n" ++ show' types ++ show' rels
+
+show' []  = ""
+show' [x] = show x
+show' (x:xs) = show x ++ show' xs
+
 
 instance Show Relation where
     show s = myShowRelation s
@@ -132,7 +125,7 @@ myShowExpr (Or e1 e2)         = "Or (" ++ show e1 ++ show e2 ++ ") "
 
 --------------------PARSE--------------------------------
 
-parseString :: String -> Either ParseError Prog
+parseString :: String -> Either ParseError PrologProgram
 parseString =
   parse (do r <- exprParser; eof; return r) ""
 
@@ -151,14 +144,14 @@ parseIdent = do
   guard $ (/= "type") $ (h:t)
   return (h:t)
 
-parseModule :: Parser Prolog
+parseModule :: Parser Id
 parseModule = do
   _    <- string "module"
   _    <- spaces
   name <- fmap Id parseIdent
   _    <- spaces
-  dot  <- char '.'
-  return (Module name dot)
+  _    <- char '.'
+  return name
 
 parseAtom :: Parser Atom
 parseAtom = 
@@ -246,8 +239,7 @@ parseSeqAtom =
 
 parseFactor :: Parser Expr
 parseFactor =
-  fmap ExprAt parseAtom <|>
-  (do
+  try (do
     _ <- spaces
     _ <- char '('
     _ <- spaces
@@ -256,7 +248,7 @@ parseFactor =
     _ <- char ')'
     _ <- spaces
     return (ExprBr '(' e ')')
-  )
+  ) <|> fmap ExprAt parseAtom
 
 parseList elem sep = do
   h <- elem
@@ -267,7 +259,7 @@ parseAnd =
   fmap (foldr1 And) $ parseList parseFactor (char ',')
 
 parseExpr = 
-  fmap (foldl1 Or) $ parseList parseAnd (char ';')
+   fmap (foldl1 Or) $ parseList parseAnd (char ';')
 
 parseDef =
   try (do
@@ -280,7 +272,7 @@ parseDef =
         _ <- char '.'
         return (Rdef h c t)
       ) <|>
-  (do
+  try (do
     _ <- spaces
     h <- parseAtom
     _ <- spaces
@@ -288,13 +280,7 @@ parseDef =
     return (Ratom h)
   )
 
-parseDefs = 
-  (do
-    h <- parseDef
-    _ <- spaces
-    t <- many parseDef
-    return (h:t)
-  )
+----------------TYPE---------------------------------
 
 parseType = 
   try (do
@@ -320,52 +306,37 @@ parseType =
         return (TBr obr v cbr)
       ) 
 
-parseList1 elem sep = do
-  h <- elem
-  t <- many (sep >> elem)
-  return (h:t)
-
-
 parseTypes =
   fmap (foldr1 Arrow) $ parseList parseType (string "->")  
 
 parseTypeDef =
-  (do
+  try (do
     _    <- spaces
     _    <- string "type"
     _    <- spaces
     name <- parseIdent
     _    <- spaces
     t    <- parseTypes
+    _    <- spaces
     _    <- char '.'
     return (TypeDef name t)
   )  
 
-parseTypeDefs = 
+-----------------------------------------------------
+
+
+exprParser = 
   (do
-    h <- parseTypeDef
-    _ <- spaces
-    t <- many parseTypeDef
-    return (h:t)
+    _   <- spaces
+    mod <- optionMaybe parseModule
+    _   <- spaces
+    t   <- many parseTypeDef
+    _   <- spaces
+    r   <- many parseDef
+    _   <- spaces
+    return (Program mod t r)
+
   )
-  
-parseProlog1 = 
-  try (do
-    _ <- spaces
-    t <- parseTypeDefs
-    _ <- spaces
-    return (Types t)
-  ) <|>
-  parseModule <|>
-  (do
-    _ <- spaces
-    d <- parseDefs
-    _ <- spaces
-    return (Def d)
-  ) 
-
-
-exprParser = fmap Prog $ many parseProlog1
 
 {-
 parseListOr :: Parser Atom
