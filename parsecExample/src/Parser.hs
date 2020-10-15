@@ -13,17 +13,15 @@ data PrologProgram = Program {
 data Relation = Ratom Atom
               | Rdef Atom String Expr
 
-data Expr = ExprBr Char Expr Char
-          | ExprAt Atom
+data Expr = ExprAt Atom
           | And Expr Expr
           | Or Expr Expr
 
-data TypeDef = TypeDef String Type
+data TypeDef = TypeDef Id Type
 
 
 data Type = TVar Var
           | TAtom Atom
-          | TBr Char Type Char
           | Arrow Type Type
 
 
@@ -31,8 +29,7 @@ data Atom  = Core Id
            | Seq Id SeqAtom
 
 
-data AtomBr = AtomB Char AtomBr Char
-            | AtomA Atom
+data AtomBr =  AtomA Atom
             | Variable Var
 
 
@@ -52,15 +49,14 @@ newtype Var = Var String
 instance Show TypeDef where
   show s = myShowTypeDef s
 
-myShowTypeDef (TypeDef s t) = "TypeDef " ++ s ++ show t ++ "\n"
+myShowTypeDef (TypeDef s t) = "TypeDef " ++ show s ++ show t ++ "\n"
 
 instance Show Type where
     show s = myShowType s
 
 myShowType (TVar v) = show v
 myShowType (TAtom a) = show a
-myShowType (TBr c a b) =  " (" ++ show a ++ ") "
-myShowType (Arrow a b) = show a ++ " -> " ++ show b
+myShowType (Arrow a b) =  " Arrow (" ++ show a ++ show b ++ ") "
 
 
 instance Show PrologProgram where
@@ -90,9 +86,8 @@ myShowAtom (Seq b c) = "Atom (" ++ show b ++ show c ++ ")"
 instance Show AtomBr where
     show s = myShowAtomBr  s
 
-myShowAtomBr (AtomB obr a cbr) = " (" ++ (show a) ++ ") "
-myShowAtomBr (AtomA a) = " (" ++ show a ++ ") "
-myShowAtomBr (Variable v) = " (" ++ show v ++ ") "
+myShowAtomBr (AtomA a) = show a 
+myShowAtomBr (Variable v) = show v
 
 instance Show SeqAtom where
     show s = myShowSeqAtom s
@@ -117,7 +112,6 @@ myShowVar (Var s) = " (Var " ++ s ++ ") "
 instance Show Expr where
     show s = myShowExpr s
 
-myShowExpr (ExprBr obr e cbr) = [obr] ++ show e ++ [cbr]
 myShowExpr (ExprAt atom)      =  show atom 
 myShowExpr (And e1 e2)        = "And (" ++ show e1 ++ show e2 ++ ") "
 myShowExpr (Or e1 e2)         = "Or (" ++ show e1 ++ show e2 ++ ") "
@@ -169,17 +163,16 @@ parseAtom =
     return (Core (Id h))
   )
 
-
 parseAtomBr :: Parser AtomBr
 parseAtomBr = 
   try (fmap AtomA parseAtom) <|>
   try (do
-    obr <- char '('
+    _   <- char '('
     _   <- spaces
     e   <- parseAtomBr
     _   <- spaces
-    cbr <- char ')'
-    return (AtomB obr e cbr)
+    _   <- char ')'
+    return (e)
   ) <|>
   (do
     _ <- spaces
@@ -247,7 +240,7 @@ parseFactor =
     _ <- spaces
     _ <- char ')'
     _ <- spaces
-    return (ExprBr '(' e ')')
+    return (e)
   ) <|> fmap ExprAt parseAtom
 
 parseList elem sep = do
@@ -297,13 +290,13 @@ parseType =
       ) <|>
   try (do
         _   <- spaces
-        obr <- char '('
+        _   <- char '('
         _   <- spaces
         v   <- parseTypes
         _   <- spaces
-        cbr <- char ')'
+        _ <- char ')'
         _   <- spaces
-        return (TBr obr v cbr)
+        return (v)
       ) 
 
 parseTypes =
@@ -319,7 +312,7 @@ parseTypeDef =
     t    <- parseTypes
     _    <- spaces
     _    <- char '.'
-    return (TypeDef name t)
+    return (TypeDef (Id name) t)
   )  
 
 -----------------------------------------------------
