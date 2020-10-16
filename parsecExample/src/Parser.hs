@@ -139,7 +139,7 @@ parseIdent = do
   return (h:t)
 
 parseModule :: Parser Id
-parseModule = do
+parseModule = try $ do
   _    <- string "module"
   _    <- spaces
   name <- fmap Id parseIdent
