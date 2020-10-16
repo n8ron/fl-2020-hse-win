@@ -252,7 +252,7 @@ parseAnd =
   fmap (foldr1 And) $ parseList parseFactor (char ',')
 
 parseExpr = 
-   fmap (foldl1 Or) $ parseList parseAnd (char ';')
+  fmap (foldr1 Or) $ parseList parseAnd (char ';')
 
 parseDef =
   try (do
